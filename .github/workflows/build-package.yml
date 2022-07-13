@@ -24,7 +24,7 @@ on:
         default: Release
         required: false
       signed:
-        description: If the packages should be signed. This will create a second artifact for the signed packages (<artifact_name>-signed).
+        description: This will create a second artifact for the signed packages (<artifact_name>-signed).
         type: boolean
         required: false
         default: true

@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  push:
+    # branches:
+    #   - release/*
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Get version
+        id: version
+        run: |
+          version=$(echo ${{ github.ref }} | rev | cut -d '/' -f 1 | rev)
+          echo '::set-output name=number::$version'
+
+      - name: Create release (draft)
+        run: |
+          gh release create v${{ steps.version.output.number }} --generate-notes --draft

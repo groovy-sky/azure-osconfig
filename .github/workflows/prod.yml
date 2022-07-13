@@ -1,0 +1,24 @@
+name: Prod
+
+on:
+  release:
+    types:
+      - released # a release is published
+
+jobs:
+  build-package:
+    name: Build packages
+    uses: ./.github/workflows/build-package.yml
+    with:
+      signed: true
+    secrets: inherit
+
+  publish:
+    name: Publish
+    needs: build-package
+    if: ${{ needs.check-changes.outputs.publish == 'true' }}
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      artifact: package-signed
+      environment: prod
+    secrets: inherit

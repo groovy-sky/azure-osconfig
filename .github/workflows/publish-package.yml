@@ -8,15 +8,93 @@ on:
         type: string
         required: false
         default: package-signed
+      environment:
+        description: The environment to publish to
+        type: string
+        required: true
 
 jobs:
   publish-package:
     name: Publish package
     runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
-    environment: package-release
+    environment: ${{ inputs.envoronment }}
     steps:
       - uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artifact }}
-          path: ${{ github.workspace }}/signed
+          path: ${{ github.workspace }}/packages
 
+      # TODO: check if this can be broken into separate steps
+      - name: Install repo-client/submission key
+        run: |
+          # Authenticate
+          az login -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
+
+          # Generate SAS key
+          END=`date -u -d "30 minutes" '+%Y-%m-%dT%H:%MZ'`
+          SAS_KEY=`az storage blob generate-sas -c azure-repoapi-client -n azure-repoapi-client_2.0.1_amd64.deb --account-name osconfig --account-key $(ACCOUNT_KEY) --permissions r --expiry $END --https-only --output tsv`
+
+          # Download/install repo-client
+          curl -o azure-repoapi-client_2.0.1_amd64.deb -O https://osconfig.blob.core.windows.net/azure-repoapi-client/azure-repoapi-client_2.0.1_amd64.deb?$SAS_KEY
+          sudo apt install ./azure-repoapi-client_2.0.1_amd64.deb
+
+          # Download submission key
+          az keyvault secret download --encoding utf-8 --file .repoclient/private.pem --name OSConfigPackaging --vault-name itemvault
+
+      - name: Create configuration
+        run: |
+          REPOCLIENT_CONFIG=.repoclient/config.json
+          mkdir -p .repoclient
+          touch $REPOCLIENT_CONFIG
+          ln -s .repoclient/config.json .repoclient/prodconfig.json
+          cat <<EOF >$REPOCLIENT_CONFIG
+          {
+              "server": "azure-apt-cat.cloudapp.net",
+              "port": "443",
+              "AADClientId": "${{ secrets.AAD_CLIENT_ID }}",
+              "AADClientCertificate": "/home/vsts/.repoclient/private.pem",
+              "AADResource": "https://microsoft.onmicrosoft.com/${{ secrets.AAD_RESOURCE_ID }}",
+              "AADTenant": "${{ secrets.AAD_TENANT }}",
+              "AADAuthorityUrl": "https://login.microsoftonline.com",
+              "repositoryId": "osconfig"
+          }
+          EOF
+
+      - name: Stage packages
+        run: |
+
+      # TODO: try to make this step loop over some input
+      - name: Publish
+        run: |
+          # Validates a submissionId to ensure all packages are successfully submitted
+          function validate {
+            result=`repoclient -v v3 request check $1`
+            successCount=`echo $result | jq '.message.packages[] | select(.status == "Success")' | jq -s '. | length'`
+            totalCount=`echo $result | jq '.message.packages | length'`
+            echo Validated $1, totalCount=$totalCount, successCount=$successCount
+            # TODO: echo error fo github "::error ..."
+            if [[ $successCount != $totalCount ]]; then echo "Failed to publish" && exit 1; fi
+          }
+
+          # Ubuntu 20.04
+          result=`repoclient -s pmc -v v3 package add packages/ubuntu2004 -r 5e852954e45fff3153da6201`
+          echo $result
+          submissionIdUbuntu2004=`echo $result | jq -r '.message.submissionId'`
+
+          # Ubuntu 18.04
+          result=`repoclient -s pmc -v v3 package add packages/ubuntu1804 -r 5dd2fb59e4f4449ba82df855`
+          echo $result
+          submissionIdUbuntu1804=`echo $result | jq -r '.message.submissionId'`
+
+          # Debian 9
+          result=`repoclient -s pmc -v v3 package add packages/debian9 -r 5dd2fb59e4f44492192df84a`
+          echo $result
+          submissionIdDebian9=`echo $result | jq -r '.message.submissionId'`
+
+          # Sleep to ensure validation by ESRP occurs
+          sleep 10s
+
+          # Validate submissions
+          validate $submissionIdUbuntu2004
+          validate $submissionIdUbuntu1804
+          validate $submissionIdDebian9

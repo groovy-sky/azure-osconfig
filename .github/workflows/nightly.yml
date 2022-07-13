@@ -22,7 +22,7 @@ jobs:
           # TODO: change this back to '1 day ago'
           timeago='5 days ago'
 
-          commit_secs=$(date --date "$datetime" +'%s')    # For "now", use $(date +'%s')
+          commit_secs=$(date --date "$datetime" +'%s')
           ta_secs=$(date --date "$timeago" +'%s')
 
           current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -30,13 +30,24 @@ jobs:
 
           if [ $ta_secs -lt $commit_secs ]
           then
-            echo "::set-output name=publish::true"
+            echo '::set-output name=publish::true'
           else
-            echo "::set-output name=publish::false"
+            echo '::set-output name=publish::false'
           fi
+
+  # package:
+  #   name: Build package
+  #   uses: ./.github/workflows/build-package.yml
+  #   with:
+  #     signed: true
+  #   secrets: inherit
 
   publish:
     name: Publish
     needs: check-changes
     if: ${{ needs.check-changes.outputs.publish == 'true' }}
     uses: ./.github/workflows/publish-package.yml
+    with:
+      artifact: package-signed
+      environment: nightly
+    secrets: inherit
