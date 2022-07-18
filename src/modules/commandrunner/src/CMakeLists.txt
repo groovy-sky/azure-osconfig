@@ -3,12 +3,7 @@
 
 project(commandrunner)
 
-set(CMAKE_MODULE_PATH ${MODULES_DIR}/cmake/)
-
 add_library(commandrunnerlib STATIC CommandRunner.cpp Command.cpp)
-
-include(GenerateModule)
-generate_module(commandrunnerlib "CommandRunner")
 
 target_link_libraries(commandrunnerlib PRIVATE logging commonutils)
 target_include_directories(commandrunnerlib

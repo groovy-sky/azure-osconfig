@@ -2,11 +2,15 @@
 # Licensed under the MIT License.
 
 set(MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_MODULE_PATH ${MODULES_DIR}/cmake/)
 set(MODULES_TEMPLATE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
 
-add_subdirectory(commandrunner)
+include(AddModule)
+
+# add_subdirectory(commandrunner)
+add_module(commandrunner)
 add_subdirectory(deviceinfo)
 add_subdirectory(firewall)
 add_subdirectory(hostname)

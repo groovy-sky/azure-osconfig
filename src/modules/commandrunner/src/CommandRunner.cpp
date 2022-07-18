@@ -16,16 +16,8 @@ const unsigned int CommandRunner::m_maxCacheSize = 10;
 const char* CommandRunner::m_persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
 const char* CommandRunner::m_defaultCacheTemplate = "{}";
 
-constexpr const char g_moduleInfo[] = R""""({
-    "Name": "CommandRunner",
-    "Description": "Provides functionality to remotely run commands on the device",
-    "Manufacturer": "Microsoft",
-    "VersionMajor": 2,
-    "VersionMinor": 0,
-    "VersionInfo": "Nickel",
-    "Components": ["CommandRunner"],
-    "Lifetime": 1,
-    "UserAccount": 0})"""";
+// TODO: generate this string from module.json
+constexpr const char g_moduleInfo[] = R""""()"""";
 
 std::mutex CommandRunner::m_diskCacheMutex;
 
