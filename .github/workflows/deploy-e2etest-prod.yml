@@ -43,7 +43,7 @@ jobs:
       environment: e2e-prod
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
-      testNameSuffix: (prod)
+      testNameSuffix: prod
     secrets: inherit
 
   deprovision-resources:

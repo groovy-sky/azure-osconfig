@@ -150,6 +150,10 @@ jobs:
         run: |
           kill -SIGINT `pidof pidstat`
 
+      - name: Stop osconfig agent
+        run: |
+          sudo systemctl stop osconfig
+
       - name: Check performance results - Agent
         if: inputs.cpuThreshold != ''
         run: |
@@ -207,19 +211,19 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-logs-${{ matrix.distroName }}
+          name: test-logs-${{ matrix.distroName }}-${{ inputs.testNameSuffix }}
           path: ${{ runner.temp }}/osconfig*.log
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-results-${{ matrix.distroName }}
+          name: test-results-${{ matrix.distroName }}-${{ inputs.testNameSuffix }}
           path: ./src/tests/e2etest/TestResults/test-results-${{ matrix.distroName }}*.trx
 
       - uses: dorny/test-reporter@v1.5.0
         if: always()
         with:
-          name: E2E Test Report ${{ matrix.distroName }} ${{ inputs.testNameSuffix }}
+          name: E2E Test Report ${{ matrix.distroName }} (${{ inputs.testNameSuffix }})
           path: ./src/tests/e2etest/TestResults/test-results-${{ matrix.distroName }}*.trx
           reporter: dotnet-trx
