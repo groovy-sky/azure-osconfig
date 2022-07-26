@@ -107,7 +107,7 @@ jobs:
           sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
           sudo sed -i '/\"ReportingIntervalSeconds\"/c\\  \"ReportingIntervalSeconds\": 5,' /etc/osconfig/osconfig.json
           
-          sudo echo {} > /etc/osconfig/osconfig_desired.json
+          sudo sh -c "echo {} > /etc/osconfig/osconfig_desired.json"
 
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
