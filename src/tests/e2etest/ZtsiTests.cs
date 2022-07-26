@@ -36,12 +36,12 @@ namespace E2eTesting
 
         public bool SetServiceUrl(string serviceUrl)
         {
-            return SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl);
+            return SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl, DataSourceType.Local);
         }
 
         public bool SetEnabled(bool enabled)
         {
-            return SetDesired<bool>(_componentName, _desiredEnabled, enabled);
+            return SetDesired<bool>(_componentName, _desiredEnabled, enabled, DataSourceType.Local);
         }
 
         public void SetZtsiConfiguration(string serviceUrl, bool enabled)

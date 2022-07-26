@@ -196,8 +196,8 @@ jobs:
       - name: Stage logs
         if: always()
         run: |
-          sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
-          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+          sudo cp -f /var/log/osconfig* ${{ runner.temp }}
+          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*
 
       - name: Check logs
         if: success() || failure()
