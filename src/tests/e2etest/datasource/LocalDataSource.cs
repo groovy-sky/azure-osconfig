@@ -33,6 +33,7 @@ namespace E2eTesting
             {
                 Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + JObject.FromObject(value));
                 JObject obj = local[componentName] as JObject;
+                Console.Write("[LocalDataSource] obj:" + obj);
                 obj.Add(objectName, JObject.FromObject(value));
                 // local[componentName][objectName] = JObject.FromObject(value);
             }
