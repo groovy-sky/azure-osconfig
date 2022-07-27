@@ -32,7 +32,8 @@ namespace E2eTesting
             else
             {
                 Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + JObject.FromObject(value));
-                ((JObject)local[componentName]).Add(new JProperty(objectName, JObject.FromObject(value)));
+                JObject obj = local[componentName] as JObject;
+                obj.Add(objectName, JObject.FromObject(value));
                 // local[componentName][objectName] = JObject.FromObject(value);
             }
             File.WriteAllText(_desiredPath, local.ToString());
