@@ -1,9 +1,51 @@
 [
-    {
-        "ComponentName": "PackageManagerConfiguration",
-        "ObjectName": "state",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    }
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "invalidObjectName",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "invalidComponentName",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  }
 ]
