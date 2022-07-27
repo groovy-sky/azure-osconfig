@@ -31,7 +31,8 @@ namespace E2eTesting
             }
             else
             {
-                local[componentName][objectName] = JObject.FromObject(value);
+                ((JObject)local[componentName]).Add(new JProperty(objectName, JObject.FromObject(value)));
+                // local[componentName][objectName] = JObject.FromObject(value);
             }
             File.WriteAllText(_desiredPath, local.ToString());
             return true;
