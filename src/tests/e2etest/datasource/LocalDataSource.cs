@@ -31,15 +31,31 @@ namespace E2eTesting
             }
             else
             {
+                JObject componentRoot = local[componentName] as JObject;
                 var obj = JObject.FromObject(value);
-                Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + obj);
+                Console.Write("[LocalDataSource] local[componentName]" + local[componentName]);
+                Console.Write("[LocalDataSource] componentRoot" + componentRoot);
+
+                if (null != componentRoot)
+                {
+                    componentRoot[objectName] = obj;
+                }
+                else
+                {
+                    // Create the component root
+                    var str = $$"""{ "{{objectName}}": {{obj}} }""";
+                    Console.Write("[LocalDataSource] str: " + str);
+                    var objectJson = JObject.Parse($$"""{ "{{objectName}}": {{str}} }""");
+                    local.Add(componentName, objectJson);
+                }
+
                 if (((JObject)local[componentName]).ContainsKey(objectName))
                 {
                     local[componentName][objectName] = obj;
                 }
                 else
                 {
-                    local.Add(objectName, obj);
+                    
                 }
             }
             File.WriteAllText(_desiredPath, local.ToString());
