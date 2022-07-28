@@ -1,0 +1,76 @@
+[
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "Payload": "{ \"packages\": [ \"rolldice\" ], \"gpgKeys\": { \"microsoft-key\": \"https://packages.microsoft.com/keys/microsoft.asc\" }, \"sources\": { \"microsoft-repo\": \"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] http://us.archive.ubuntu.com/ubuntu focal rolldice\" }}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "invalidObjectName",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "invalidComponentName",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "state",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "Payload": "{ \"packages\": [ \"invalidPackageName\" ], \"gpgKeys\": { \"microsoft-key\": \"https://packages.microsoft.com/keys/microsoft.asc\" }, \"sources\": { \"microsoft-repo\": \"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] http://us.archive.ubuntu.com/ubuntu focal rolldice\" }}",
+    "ExpectedResult": 100,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "Payload": "{ \"packages\": [ \"rolldice\" ], \"gpgKeys\": { \"microsoft-key\": \"https://packages.microsoft.com/keys/invalidKeyName\" }, \"sources\": { \"microsoft-repo\": \"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] http://us.archive.ubuntu.com/ubuntu focal rolldice\" }}",
+    "ExpectedResult": 2,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "Payload": "{ \"packages\": [ \"rolldice\" ], \"gpgKeys\": { \"microsoft-key\": \"https://packages.microsoft.com/keys/microsoft.asc\" }, \"sources\": { \"microsoft-repo\": \"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] http://us.archive.ubuntu.com/invalidPackageUrl focal rolldice\" }}",
+    "ExpectedResult": 100,
+    "WaitSeconds": 5
+  }
+]
