@@ -127,10 +127,10 @@ namespace E2eTesting
             SendCommand(refreshCommand, DataSourceType.IotHub, exptectFailure);
         }
 
-        public CommandStatus WaitForStatus(string commandId, CommandState state)
+        public CommandStatus WaitForStatus(string commandId, CommandState state, DataSourceType dataSourceType = DataSourceType.IotHub)
         {
             Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.CommandId == commandId) && (status.CurrentState == state));
-            return GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
+            return GetReported<CommandStatus>(_componentName, _reportedObjectName, condition, dataSourceType);
         }
 
         [Test]
@@ -146,7 +146,7 @@ namespace E2eTesting
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
             SendCommand(command, dataSourceType);
 
-            CommandStatus status = WaitForStatus(command.CommandId, state);
+            CommandStatus status = WaitForStatus(command.CommandId, state, dataSourceType);
             JsonAssert.AreEqual(CreateCommandStatus(command.CommandId, textResult, state, resultCode), status);
         }
 
