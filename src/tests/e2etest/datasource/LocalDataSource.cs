@@ -31,10 +31,9 @@ namespace E2eTesting
             }
             else
             {
-                Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + JObject.FromObject(value));
-                JObject obj = local[componentName] as JObject;
-                Console.Write("[LocalDataSource] obj:" + obj);
-                obj.Add(objectName, JObject.FromObject(value));
+                var obj = JObject.FromObject(value);
+                Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + obj);
+                local.Add(objectName, obj);
                 // local[componentName][objectName] = JObject.FromObject(value);
             }
             File.WriteAllText(_desiredPath, local.ToString());
