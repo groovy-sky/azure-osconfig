@@ -33,11 +33,11 @@ namespace E2eTesting
             {
                 var obj = JObject.FromObject(value);
                 Console.Write("[LocalDataSource] setting desired value for " + componentName + "." + objectName + ": " + obj);
-                try
+                if (((JObject)local[componentName]).ContainsKey(objectName))
                 {
-                    local[componentName][objectName] = JObject.FromObject(value);
+                    local[componentName][objectName] = obj;
                 }
-                catch (NullReferenceException)
+                else
                 {
                     local.Add(objectName, obj);
                 }
