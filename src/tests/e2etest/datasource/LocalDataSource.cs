@@ -33,8 +33,8 @@ namespace E2eTesting
             {
                 JObject componentRoot = local[componentName] as JObject;
                 var obj = JObject.FromObject(value);
-                Console.Write("[LocalDataSource] local[componentName]" + local[componentName]);
-                Console.Write("[LocalDataSource] componentRoot" + componentRoot);
+                // Console.Write("[LocalDataSource] local[componentName]" + local[componentName]);
+                // Console.Write("[LocalDataSource] componentRoot" + componentRoot);
 
                 if (null != componentRoot)
                 {
@@ -49,15 +49,16 @@ namespace E2eTesting
                     local.Add(componentName, objectJson);
                 }
 
-                if (((JObject)local[componentName]).ContainsKey(objectName))
-                {
-                    local[componentName][objectName] = obj;
-                }
-                else
-                {
+                // if (((JObject)local[componentName]).ContainsKey(objectName))
+                // {
+                //     local[componentName][objectName] = obj;
+                // }
+                // else
+                // {
                     
-                }
+                // }
             }
+            Console.Write("[LocalDataSource] Final JSON: " + local);
             File.WriteAllText(_desiredPath, local.ToString());
             System.Threading.Thread.Sleep(2000);
             return true;
