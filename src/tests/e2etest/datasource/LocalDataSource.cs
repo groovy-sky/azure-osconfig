@@ -48,19 +48,10 @@ namespace E2eTesting
                     var objectJson = JObject.Parse($$"""{ "{{objectName}}": {{obj}} }""");
                     local.Add(componentName, objectJson);
                 }
-
-                // if (((JObject)local[componentName]).ContainsKey(objectName))
-                // {
-                //     local[componentName][objectName] = obj;
-                // }
-                // else
-                // {
-                    
-                // }
             }
             Console.Write("[LocalDataSource] Final JSON: " + local);
             File.WriteAllText(_desiredPath, local.ToString());
-            System.Threading.Thread.Sleep(10000);
+            System.Threading.Thread.Sleep(5000);
             return true;
         }
 
