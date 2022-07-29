@@ -51,7 +51,7 @@ namespace E2eTesting
             }
             // Console.Write("[LocalDataSource] Final JSON: " + local);
             File.WriteAllText(_desiredPath, local.ToString());
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(5000);
             return true;
         }
 

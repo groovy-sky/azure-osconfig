@@ -46,7 +46,8 @@ namespace E2eTesting
             switch (dataSourceType)
             {
                 case DataSourceType.IotHub:
-                    return _iotHubDataSource;
+                    // return _iotHubDataSource;
+                    return _localDataSource;
                 case DataSourceType.Local:
                     return _localDataSource;
                 default:
