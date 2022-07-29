@@ -43,9 +43,9 @@ namespace E2eTesting
                 else
                 {
                     // Create the component root
-                    var str = $$"""{ "{{objectName}}": {{obj}} }""";
-                    Console.Write("[LocalDataSource] str: " + str);
-                    var objectJson = JObject.Parse($$"""{ "{{objectName}}": {{str}} }""");
+                    // var str = $$"""{ "{{objectName}}": {{obj}} }""";
+                    // Console.Write("[LocalDataSource] str: " + str);
+                    var objectJson = JObject.Parse($$"""{ "{{objectName}}": {{obj}} }""");
                     local.Add(componentName, objectJson);
                 }
 
