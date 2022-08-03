@@ -55,5 +55,13 @@
     "Payload": "{}",
     "ExpectedResult": 22,
     "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"test1\", \"arguments\": \"echo Hello World\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
   }
 ]
