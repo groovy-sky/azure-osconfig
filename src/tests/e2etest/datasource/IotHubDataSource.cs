@@ -212,7 +212,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3})", componentName, objectName, start, DateTime.Now);
+                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}), reported: {4}", componentName, objectName, start, DateTime.Now, reported);
                     break;
                 }
             }
