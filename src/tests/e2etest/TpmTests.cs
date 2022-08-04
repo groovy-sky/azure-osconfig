@@ -25,15 +25,15 @@ namespace E2eTesting
 
         public class Tpm
         {
-            public TpmStatusCode TpmStatus { get; set; }
             public string TpmVersion { get; set; }
             public string TpmManufacturer { get; set; }
+            public TpmStatusCode TpmStatus { get; set; }
         }
 
         [Test]
-        public void TpmTest_Get()
+        public async Task TpmTest_Get()
         {
-            Tpm reported = GetReported<Tpm>(_componentName);
+            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => true);
 
             Assert.Multiple(() =>
             {
@@ -48,7 +48,6 @@ namespace E2eTesting
                 {
                     RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
                 }
-
             });
         }
     }

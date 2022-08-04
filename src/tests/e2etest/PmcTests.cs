@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace E2eTesting
 {
-    [TestFixture, Category("Pmc"), Ignore("Stability Issues")]
+    [TestFixture, Category("Pmc")]
     public class PmcTests : E2ETest
     {
         private const string _componentName = "PackageManagerConfiguration";
@@ -91,16 +91,16 @@ namespace E2eTesting
         }
 
         [Test]
-        [TestCase("cowsay", true, true, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
+        [TestCase("cowsay", true, ACK_SUCCESS, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
             TestName = "PmcTest_InstallAndUninstallValidPackagesAndAddSource")]
-        [TestCase("cowsay", false, true, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
+        [TestCase("cowsay", false, ACK_SUCCESS, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
             TestName = "PmcTest_InstallAndUninstallValidPackagesAndDeleteSource")]
-        [TestCase("nonexisting", false, false, "\\(failed\\)", ExecutionState.Failed, ExecutionSubState.InstallingPackages, "nonexisting",
+        [TestCase("nonexisting", false, ACK_ERROR, "\\(failed\\)", ExecutionState.Failed, ExecutionSubState.InstallingPackages, "nonexisting",
             TestName = "PmcTest_InstallInvalidPackageAndDeleteSource")]
-        public void PmcTest_ConfigurePackagesAndSources(string packageNameToInstall, bool packageSourceRequired, bool desiredResponse, string versionPattern,
-                                                        ExecutionState executionState, ExecutionSubState executionSubState, string executionSubStateDetails)
+        public async Task PmcTest_ConfigurePackagesAndSources(string packageNameToInstall, bool packageSourceRequired, int desiredResponseAck, string versionPattern,
+                            ExecutionState executionState, ExecutionSubState executionSubState, string executionSubStateDetails)
         {
-
+            
             var desired = new DesiredState
             {
                 Packages = new List<string>() { $"{_packageNameToUninstall}-", packageNameToInstall },
@@ -112,9 +112,15 @@ namespace E2eTesting
                 }
             };
 
-            Assert.AreEqual(desiredResponse, SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
+            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
+            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            {
+                return (response.Ac == desiredResponseAck)
+                    && (response.Value.Packages.Contains(packageNameToInstall))
+                    && (response.Value.Sources.ContainsKey(_packageSourceName) == packageSourceRequired);
+            });
 
-            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
                 return (state.SourcesFilenames.Contains($"{_packageSourceName}.list") == packageSourceRequired)
                     && (state.Packages.FirstOrDefault(x => x.StartsWith($"{packageNameToInstall}=")) != null);
@@ -124,6 +130,7 @@ namespace E2eTesting
             var installedPackagePattern = new Regex($"{packageNameToInstall}={versionPattern}");
             Assert.Multiple(() =>
             {
+                Assert.AreEqual(desiredResponseAck, desiredTask.Ac);
                 Assert.IsNotNull(reported.Packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
                 Assert.IsNotNull(reported.Packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
                 Assert.AreEqual(packageSourceRequired, reported.SourcesFilenames.Contains($"{_packageSourceName}.list"));
@@ -134,25 +141,31 @@ namespace E2eTesting
         }
 
         [Test]
-        public void PmcTest_InvalidPackageName()
+        public async Task PmcTest_InvalidPackageName()
         {
             var invalidPackageName = "cowsay ; echo foo";
             var desired = new DesiredState
             {
                 Packages = new List<string>() { $"{_packageNameToUninstall}-", invalidPackageName },
-                Sources = new Dictionary<string, string>() { { _packageSourceName, null } },
-                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
+                Sources = new Dictionary<string, string>() {{ _packageSourceName, null }},
+                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, null }}
             };
 
-            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
-            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
+            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
             {
-                return (state.ExecutionState.Equals(ExecutionState.Failed))
+                return (response.Ac == ACK_ERROR) && (response.Value.Packages.Contains(invalidPackageName));
+            });
+
+            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            {
+                return (state.ExecutionState.Equals(ExecutionState.Failed)) 
                     && (state.ExecutionSubstate.Equals(ExecutionSubState.DeserializingPackages));
             });
 
             Assert.Multiple(() =>
             {
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(0, reported.Packages.Count);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.ExecutionSubstate);
@@ -161,19 +174,24 @@ namespace E2eTesting
         }
 
         [Test]
-        public void PmcTest_InvalidPackageSource()
+        public async Task PmcTest_InvalidPackageSource()
         {
             const string wrongSourceConfig = "debz https://www.example.com";
 
             var desired = new DesiredState
             {
                 Packages = new List<string>(),
-                Sources = new Dictionary<string, string>() { { _packageSourceName, wrongSourceConfig } },
-                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
+                Sources = new Dictionary<string, string>() {{ _packageSourceName, wrongSourceConfig }},
+                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, null }}
             };
 
-            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
-            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
+            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            {
+                return (response.Ac == ACK_ERROR) && (response.Value.Sources.ContainsKey(_packageSourceName));
+            });
+
+            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
                 return (state.ExecutionState.Equals(ExecutionState.Failed))
                     && (state.ExecutionSubstate.Equals(ExecutionSubState.ModifyingSources));
@@ -181,6 +199,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.ExecutionSubstate);
                 Assert.AreEqual(_packageSourceName, reported.ExecutionSubstateDetails);
@@ -190,17 +209,22 @@ namespace E2eTesting
         [Test]
         [TestCase("httpzz://wrong.com", TestName = "PmcTest_InvalidGpgUrl")]
         [TestCase("https://www.example.com", TestName = "PmcTest_InvalidGpgKey")]
-        public void PmcTest_InvalidGpgConfiguration(string url)
+        public async Task PmcTest_InvalidGpgConfiguration(string url)
         {
             var desired = new DesiredState
             {
                 Packages = new List<string>(),
-                Sources = new Dictionary<string, string>() { { _packageSourceName, null } },
-                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, url } }
+                Sources = new Dictionary<string, string>() {{ _packageSourceName, null }},
+                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, url } }
             };
 
-            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
-            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
+            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            {
+                return (response.Ac == ACK_ERROR) && (response.Value.GpgKeys.ContainsKey(_gpgKeyId));
+            });
+
+            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
                 return (state.ExecutionState.Equals(ExecutionState.Failed))
                     && (state.ExecutionSubstate.Equals(ExecutionSubState.DownloadingGpgKeys));
@@ -208,6 +232,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.ExecutionSubstate);
                 Assert.AreEqual(_gpgKeyId, reported.ExecutionSubstateDetails);

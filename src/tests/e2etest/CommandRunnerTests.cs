@@ -3,7 +3,6 @@
 
 using NUnit.Framework;
 using System;
-using System.Xml.Serialization;
 
 namespace E2eTesting
 {
@@ -49,6 +48,11 @@ namespace E2eTesting
             public long ResultCode { get; set; }
             public string TextResult { get; set; }
             public CommandState CurrentState { get; set; }
+        }
+
+        public static string GenerateId()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
         }
 
         public static CommandArguments CreateCommand(string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLineTextResult = false)
@@ -101,12 +105,26 @@ namespace E2eTesting
             };
         }
 
-        public void SendCommand(CommandArguments command, DataSourceType dataSourceType = DataSourceType.IotHub, bool exptectFailure = false)
+        public void SendCommand(CommandArguments command, int expectedAckCode = ACK_SUCCESS)
         {
+            int ackCode = -1;
+
             Console.WriteLine($"{command.Action} \"{command.CommandId}\" ({command.Arguments})");
-            if (!SetDesired<CommandArguments>(_componentName, _desiredObjectName, command, dataSourceType) && !exptectFailure)
+
+            try
             {
-                Assert.Fail("Command failed!");
+                var setDesiredTask = SetDesired<CommandArguments>(_componentName, _desiredObjectName, command);
+                setDesiredTask.Wait();
+                ackCode = setDesiredTask.Result.Ac;
+            }
+            catch (Exception e)
+            {
+                Assert.Fail("Failed to send command: {0}", e.Message);
+            }
+
+            if (ackCode != expectedAckCode)
+            {
+                Assert.Fail("CommandRunner.CommandArguments expected ackCode {0}, but got {1}", expectedAckCode, ackCode);
             }
         }
 
@@ -115,7 +133,7 @@ namespace E2eTesting
             SendCommand(CreateCancelCommand(commandId));
         }
 
-        public void RefreshCommandStatus(string newCommandId, bool exptectFailure = false)
+        public void RefreshCommandStatus(string newCommandId, int expectedAckCode = ACK_SUCCESS)
         {
             var refreshCommand = new CommandArguments
             {
@@ -124,24 +142,25 @@ namespace E2eTesting
                 Action = Action.RefreshCommandStatus
             };
 
-            SendCommand(refreshCommand, DataSourceType.IotHub, exptectFailure);
+            SendCommand(refreshCommand, expectedAckCode);
         }
 
         public CommandStatus WaitForStatus(string commandId, CommandState state)
         {
             Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.CommandId == commandId) && (status.CurrentState == state));
-            return GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
+            var reportedTask = GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
+            reportedTask.Wait();
+            return reportedTask.Result;
         }
 
         [Test]
-        [TestCase("echo 'hello world from local management'", 0, false, 0, "hello world from local management\n", CommandState.Succeeded, DataSourceType.Local)]
-        [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed, DataSourceType.IotHub)]
-        public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state, DataSourceType dataSourceType)
+        [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded)]
+        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut)]
+        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
+        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
+        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
+        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
+        public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
             SendCommand(command);
@@ -181,7 +200,7 @@ namespace E2eTesting
             JsonAssert.AreEqual(CreateCommandStatus(commandId, "command 1 ", CommandState.Succeeded, 0), commandStatus);
 
             // Send a command with a duplicate command Id
-            SendCommand(commandWithDuplicateCommandId, DataSourceType.IotHub, true);
+            SendCommand(commandWithDuplicateCommandId, 400);
         }
 
         [Test]

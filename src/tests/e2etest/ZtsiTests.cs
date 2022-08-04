@@ -34,39 +34,108 @@ namespace E2eTesting
             public string DesiredServiceUrl { get; set; }
         }
 
-        public bool SetServiceUrl(string serviceUrl)
+        public int SetServiceUrl(string serviceUrl)
         {
-            return SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl);
-        }
-
-        public bool SetEnabled(bool enabled)
-        {
-            return SetDesired<bool>(_componentName, _desiredEnabled, enabled);
-        }
-
-        public void SetZtsiConfiguration(string serviceUrl, bool enabled)
-        {
-            var desiredConfiguration = new DesiredZtsi
+            try
             {
-                DesiredEnabled = enabled,
-                DesiredServiceUrl = serviceUrl
-            };
-            SetDesired<DesiredZtsi>(_componentName, desiredConfiguration);
+                var setDesiredTask = SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl);
+                setDesiredTask.Wait();
+                return setDesiredTask.Result.Ac;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to set service url: {0} ", e.Message);
+                return -1;
+            }
         }
 
-        public Ztsi GetZtsiConfiguration(string expectedServiceUrl, Enabled expectedEnabled)
+        public int SetEnabled(bool enabled)
         {
-            return GetReported<Ztsi>(_componentName, (Ztsi ztsi) => ((ztsi.ServiceUrl == expectedServiceUrl) && (ztsi.Enabled == expectedEnabled)));
+            try
+            {
+                var setDesiredTask = SetDesired<bool>(_componentName, _desiredEnabled, enabled);
+                setDesiredTask.Wait();
+                return setDesiredTask.Result.Ac;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to set enabled: {0} ", e.Message);
+                return -1;
+            }
+        }
+
+        public (int, int) SetZtsiConfiguration(string serviceUrl, bool enabled)
+        {
+            try
+            {
+                var desiredConfiguration = new DesiredZtsi
+                {
+                    DesiredEnabled = enabled,
+                    DesiredServiceUrl = serviceUrl
+                };
+
+                var setDesiredTask = SetDesired<DesiredZtsi>(_componentName, desiredConfiguration);
+                setDesiredTask.Wait();
+
+                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled, (GenericResponse<bool> response) => response.Ac == ACK_SUCCESS);
+                desiredEnabledTask.Wait();
+                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl, (GenericResponse<string> response) => response.Ac == ACK_SUCCESS);
+                desiredServiceUrlTask.Wait();
+
+                return (desiredServiceUrlTask.Result.Ac, desiredEnabledTask.Result.Ac);
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to set ztsi configuration: {0} ", e.Message);
+                return (-1, -1);
+            }
+        }
+
+        public (string, Enabled) GetZtsiConfiguration(string expectedServiceUrl, Enabled expectedEnabled)
+        {
+            try
+            {
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => ((ztsi.ServiceUrl == expectedServiceUrl) && (ztsi.Enabled == expectedEnabled)));
+                reportedTask.Wait();
+                var reportedConfiguration = reportedTask.Result;
+
+                return (reportedConfiguration.ServiceUrl, reportedConfiguration.Enabled);
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get ztsi configuration: {0} ", e.Message);
+                return (null, Enabled.Unknown);
+            }
         }
 
         public string GetServiceUrl(string expectedServiceUrl)
         {
-            return GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.ServiceUrl == expectedServiceUrl)).ServiceUrl;
+            try
+            {
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.ServiceUrl == expectedServiceUrl));
+                reportedTask.Wait();
+                return reportedTask.Result.ServiceUrl;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get service url: {0} ", e.Message);
+                return null;
+            }
         }
 
         public Enabled GetEnabled(Enabled expectedEnabled)
         {
-            return GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled == expectedEnabled)).Enabled;
+            try
+            {
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled == expectedEnabled));
+                reportedTask.Wait();
+                return reportedTask.Result.Enabled;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get enabled: {0} ", e.Message);
+                return Enabled.Unknown;
+            }
         }
 
         [Test]
@@ -83,11 +152,9 @@ namespace E2eTesting
         [TestCase("localhost:5000")]
         public void ZtsiTest_InvalidServiceUrl(string serviceUrl)
         {
-            Assert.Multiple(() =>
-            {
-                Assert.IsTrue(SetEnabled(false));
-                Assert.IsFalse(SetServiceUrl(serviceUrl), "Unexpected for service url");
-            });
+            int enabledAckCode = SetEnabled(false);
+            int serviceUrlAckCode = SetServiceUrl(serviceUrl);
+            Assert.AreEqual(ACK_ERROR, serviceUrlAckCode, "Unexpected ack code for service url");
         }
 
         [Test]
@@ -103,10 +170,13 @@ namespace E2eTesting
         [TestCase("https://www.example.com/params?a=1&b=2")]
         public void ZtsiTest_ValidServiceUrl(string serviceUrl)
         {
+            int enabledAckCode = SetEnabled(false);
+            int serviceUrlAckCode = SetServiceUrl(serviceUrl);
+
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(SetEnabled(false), "Unexpected for enabled");
-                Assert.IsTrue(SetServiceUrl(serviceUrl), "Unexpected for service url");
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
                 Assert.AreEqual(serviceUrl, GetServiceUrl(serviceUrl));
             });
         }
@@ -114,10 +184,13 @@ namespace E2eTesting
         [Test]
         public void ZtsiTest_Enabled()
         {
+            int serviceUrlAckCode = SetServiceUrl("http://example.com");
+            int enabledAckCode = SetEnabled(true);
+
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(SetServiceUrl("http://example.com"), "Unexpected for service url");
-                Assert.IsTrue(SetEnabled(true), "Unexpected for enabled");
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
                 Assert.AreEqual(Enabled.Enabled, GetEnabled(Enabled.Enabled));
             });
         }
@@ -129,9 +202,12 @@ namespace E2eTesting
         [TestCase("", false, "", Enabled.Disabled)]
         public void ZtsiTest_Configuration(string serviceUrl, bool enabled, string expectedServiceUrl, Enabled expectedEnabled)
         {
+            (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration(serviceUrl, enabled);
+
             Assert.Multiple(() =>
             {
-                SetZtsiConfiguration(serviceUrl, enabled);
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
                 Assert.AreEqual(expectedServiceUrl, GetServiceUrl(expectedServiceUrl));
                 Assert.AreEqual(expectedEnabled, GetEnabled(expectedEnabled));
             });
@@ -140,13 +216,24 @@ namespace E2eTesting
         [Test]
         public void ZtsiTest_InvalidConfiguration()
         {
+            (int serviceUrl, int enabled) setupAckCode = SetZtsiConfiguration("http://test.com", true);
+
             Assert.Multiple(() =>
             {
-                SetZtsiConfiguration("http://test.com", true);
-                SetZtsiConfiguration("", true);
-                var config = GetZtsiConfiguration("http://test.com", Enabled.Enabled);
-                Assert.AreEqual("http://test.com", config.ServiceUrl);
-                Assert.AreEqual(Enabled.Enabled, config.Enabled);
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.serviceUrl, "Unexpected ack code for service url during setup");
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.enabled, "Unexpected ack code for enabled during setup");
+            });
+
+            (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration("", true);
+
+            (string serviceUrl, Enabled enabled) = GetZtsiConfiguration("http://test.com", Enabled.Enabled);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
+                Assert.AreEqual("http://test.com", serviceUrl);
+                Assert.AreEqual(Enabled.Enabled, enabled);
             });
         }
     }
