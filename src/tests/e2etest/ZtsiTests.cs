@@ -111,7 +111,7 @@ namespace E2eTesting
             });
         }
 
-        [Test]
+        // [Test]
         public void ZtsiTest_Enabled()
         {
             Assert.Multiple(() =>
