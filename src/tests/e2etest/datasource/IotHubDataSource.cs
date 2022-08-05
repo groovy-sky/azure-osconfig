@@ -140,7 +140,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3})", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated());
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3}) | reported: {4}", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated(), reported[componentName]);
                     break;
                 }
             }
@@ -166,7 +166,7 @@ namespace E2eTesting
 
             if (!updatedTwin.Properties.Desired.Contains(componentName) && !updatedTwin.Properties.Desired[componentName].Contains(objectName))
             {
-                Assert.Warn("[SetDesired] {0}.{1} not found in desired properties", componentName, objectName);
+                Assert.Warn("[SetDesired] {0}.{1} not found in desired properties. reported: {2}", componentName, objectName, reported);
             }
 
             while (!PropertyExists(reported, componentName, objectName) || !IsUpdated(reported, componentName, objectName, previousUpdate))
@@ -178,7 +178,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4})", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated());
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated(), reported[componentName]);
                     break;
                 }
             }
@@ -212,7 +212,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3})", componentName, objectName, start, DateTime.Now);
+                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}", componentName, objectName, start, DateTime.Now, JsonConvert.SerializeObject(reported));
                     break;
                 }
             }
