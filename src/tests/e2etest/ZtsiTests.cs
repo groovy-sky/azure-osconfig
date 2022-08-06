@@ -90,17 +90,17 @@ namespace E2eTesting
             });
         }
 
-        [Test]
-        [TestCase("")]
-        [TestCase("http://example.com")]
-        [TestCase("https://example.com")]
-        [TestCase("http://example.com/")]
-        [TestCase("https://example.com/")]
-        [TestCase("http://www.example.com")]
-        [TestCase("https://www.example.com")]
-        [TestCase("https://www.example.com/path/to/something/")]
-        [TestCase("https://www.example.com/params?a=1")]
-        [TestCase("https://www.example.com/params?a=1&b=2")]
+        // [Test]
+        // [TestCase("")]
+        // [TestCase("http://example.com")]
+        // [TestCase("https://example.com")]
+        // [TestCase("http://example.com/")]
+        // [TestCase("https://example.com/")]
+        // [TestCase("http://www.example.com")]
+        // [TestCase("https://www.example.com")]
+        // [TestCase("https://www.example.com/path/to/something/")]
+        // [TestCase("https://www.example.com/params?a=1")]
+        // [TestCase("https://www.example.com/params?a=1&b=2")]
         public void ZtsiTest_ValidServiceUrl(string serviceUrl)
         {
             Assert.Multiple(() =>
