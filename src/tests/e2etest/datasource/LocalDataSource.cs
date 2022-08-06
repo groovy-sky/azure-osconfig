@@ -48,7 +48,7 @@ namespace E2eTesting
                 }
             );
             File.WriteAllText(_desiredPath, local.ToString());
-
+            System.Threading.Thread.Sleep(1000);
             return true;
         }
 
