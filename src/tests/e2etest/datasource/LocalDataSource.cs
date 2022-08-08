@@ -67,7 +67,7 @@ namespace E2eTesting
                     reported = JObject.Parse(File.ReadAllText(_reportedPath));
                 }
 
-                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                if ((DateTime.Now - start).TotalSeconds > maxWaitSeconds)
                 {
                     JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
                     Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].ToObject<T>(), desired[componentName][objectName].ToObject<T>());
@@ -86,7 +86,7 @@ namespace E2eTesting
                     reported = JObject.Parse(File.ReadAllText(_reportedPath));
                 }
 
-                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                if ((DateTime.Now - start).TotalSeconds > maxWaitSeconds)
                 {
                     JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
                     Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].ToObject<T>(), desired[componentName][objectName].ToObject<T>());
