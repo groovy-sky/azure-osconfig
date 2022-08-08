@@ -74,49 +74,49 @@ namespace E2eTesting
         public T GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, objectName, condition, maxWaitSeconds);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, condition, maxWaitSeconds));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, condition, maxWaitSeconds));
             return value;
         }
         public T GetReported<T>(string componentName, string objectName, Func<T, bool> condition)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, objectName, condition);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, condition));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, condition));
             return value;
         }
         public T GetReported<T>(string componentName, Func<T, bool> condition, int maxWaitSeconds)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, condition, maxWaitSeconds);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, condition, maxWaitSeconds));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, condition, maxWaitSeconds));
             return value;
         }
         public T GetReported<T>(string componentName, string objectName, int maxWaitSeconds)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, objectName, maxWaitSeconds);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, maxWaitSeconds));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName, maxWaitSeconds));
             return value;
         }
         public T GetReported<T>(string componentName, Func<T, bool> condition)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, condition);;
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, condition));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, condition));
             return value;
         }
         public T GetReported<T>(string componentName, string objectName)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, objectName);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, objectName));
             return value;
         }
         public T GetReported<T>(string componentName, int maxWaitSeconds)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName, maxWaitSeconds);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, maxWaitSeconds));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName, maxWaitSeconds));
             return value;
         }
         public T GetReported<T>(string componentName)
         {
             var value = _iotHubDataSource.GetReported<T>(componentName);
-            JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName));
+            // JsonAssert.AreEqual(value, _localDataSource.GetReported<T>(componentName));
             return value;
         }
     }
