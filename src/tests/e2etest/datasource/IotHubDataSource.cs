@@ -213,7 +213,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+                    var updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
                     Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, JsonConvert.SerializeObject(reported),JsonConvert.SerializeObject(updatedTwin.Properties.Desired[componentName]));
                     break;
                 }
