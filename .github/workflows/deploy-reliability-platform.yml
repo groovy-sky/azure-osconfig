@@ -1,7 +1,7 @@
 name: Platform Reliability Tests
-on:
-  schedule:
-    - cron: '0 10 * * *' #10am UTC / 6pm PST
+on: [push]
+  # schedule:
+  #   - cron: '0 10 * * *' #10am UTC / 6pm PST
 
 jobs:
   fetch-targets:
@@ -45,7 +45,7 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
       memThreshold: 50
-      repeatForXHours: 4
+      repeatForXHours: 2
       testNameSuffix: (reliability-platform)
     secrets: inherit
 

@@ -140,7 +140,7 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3}) | reported: {4}", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated(), reported[componentName]);
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3}) | reported: {4} | desired: {5}", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
                     break;
                 }
             }
@@ -174,11 +174,12 @@ namespace E2eTesting
                 if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
                 {
                     await Task.Delay(POLL_INTERVAL_MS);
+                    updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
                     reported = await LastReported();
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated(), reported[componentName]);
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
                     break;
                 }
             }
