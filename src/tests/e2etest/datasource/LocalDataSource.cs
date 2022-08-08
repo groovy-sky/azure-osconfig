@@ -15,6 +15,7 @@ namespace E2eTesting
     {
         private readonly string _reportedPath = "/etc/osconfig/osconfig_reported.json";
         private readonly string _desiredPath = "/etc/osconfig/osconfig_desired.json";
+        private const int POLL_INTERVAL_MS = 1000;
         
         public override void Initialize()
         {
@@ -53,30 +54,45 @@ namespace E2eTesting
 
         public override T GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds)
         {
-            JObject local = JObject.Parse(File.ReadAllText(_reportedPath));
+            DateTime start = DateTime.Now;
+            JObject reported = JObject.Parse(File.ReadAllText(_reportedPath));
 
-            Assert.IsTrue(local.ContainsKey(componentName), "[LocalDataSource] does not contain component: " + componentName);
+            Assert.IsTrue(reported.ContainsKey(componentName), "[LocalDataSource] does not contain component: " + componentName);
             if (String.IsNullOrEmpty(objectName))
             {
-                while(!condition(local[componentName].ToObject<T>()))
+                while((maxWaitSeconds > 0 && (DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                     && !(condition(reported[componentName].ToObject<T>())))
                 {
-                    System.Threading.Thread.Sleep(1000);
-                    local = JObject.Parse(File.ReadAllText(_reportedPath));
+                    System.Threading.Thread.Sleep(POLL_INTERVAL_MS);
+                    reported = JObject.Parse(File.ReadAllText(_reportedPath));
                 }
 
-                return local[componentName].ToObject<T>();
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
+                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].ToObject<T>(), desired[componentName][objectName].ToObject<T>());
+                }
+
+                return reported[componentName].ToObject<T>();
             }
             else
             {
-                Assert.IsTrue(local[componentName].ToObject<JObject>().ContainsKey(objectName));
+                Assert.IsTrue(reported[componentName].ToObject<JObject>().ContainsKey(objectName));
 
-                while(!condition(local[componentName][objectName].ToObject<T>()))
+                while((maxWaitSeconds > 0 && (DateTime.Now - start).TotalSeconds < maxWaitSeconds) 
+                    && !(condition(reported[componentName][objectName].ToObject<T>())))
                 {
-                    System.Threading.Thread.Sleep(1000);
-                    local = JObject.Parse(File.ReadAllText(_reportedPath));
+                    System.Threading.Thread.Sleep(POLL_INTERVAL_MS);
+                    reported = JObject.Parse(File.ReadAllText(_reportedPath));
                 }
 
-                return local[componentName][objectName].ToObject<T>();
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
+                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].ToObject<T>(), desired[componentName][objectName].ToObject<T>());
+                }
+
+                return reported[componentName][objectName].ToObject<T>();
             }
         }
     }
