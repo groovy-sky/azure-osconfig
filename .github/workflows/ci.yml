@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - src/**
-  pull_request:
-    paths:
-      - src/**
+  #   branches:
+  #     - main
+  #   paths:
+  #     - src/**
+  # pull_request:
+  #   paths:
+  #     - src/**
 
 env:
   build-type: Release
@@ -36,8 +36,8 @@ jobs:
         id: container
         uses: ./.github/actions/container-run
         with:
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
+          username: ${{ secrets.ACR_CLIENT_ID_TEST }}
+          password: ${{ secrets.ACR_CLIENT_SECRET_TEST }}
           os: ${{ matrix.os }}
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
@@ -107,8 +107,8 @@ jobs:
     container:
       image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:270554
       credentials:
-        username: ${{ secrets.ACR_CLIENT_ID }}
-        password: ${{ secrets.ACR_CLIENT_SECRET }}
+        username: ${{ secrets.ACR_CLIENT_ID_TEST }}
+        password: ${{ secrets.ACR_CLIENT_SECRET_TEST }}
     steps:
       - uses: actions/checkout@v3
 
