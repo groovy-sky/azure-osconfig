@@ -35,10 +35,11 @@ namespace E2eTesting
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
 
-            _iotHubDataSource = new IotHubDataSource();
-            _iotHubDataSource.Initialize();
+            // _iotHubDataSource = new IotHubDataSource();
+            // _iotHubDataSource.Initialize();
             _localDataSource = new LocalDataSource();
             _localDataSource.Initialize();
+            _iotHubDataSource = _localDataSource;   // TODO: remove this line when the _localDataSource is fixed
         }
 
         public AbstractDataSource GetDataSource(DataSourceType dataSourceType)

@@ -54,14 +54,28 @@ namespace E2eTesting
         public override T GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds)
         {
             JObject local = JObject.Parse(File.ReadAllText(_reportedPath));
+
             Assert.IsTrue(local.ContainsKey(componentName), "[LocalDataSource] does not contain component: " + componentName);
             if (String.IsNullOrEmpty(objectName))
             {
+                while(!condition(local[componentName].ToObject<T>()))
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    local = JObject.Parse(File.ReadAllText(_reportedPath));
+                }
+
                 return local[componentName].ToObject<T>();
             }
             else
             {
                 Assert.IsTrue(local[componentName].ToObject<JObject>().ContainsKey(objectName));
+
+                while(!condition(local[componentName][objectName].ToObject<T>()))
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    local = JObject.Parse(File.ReadAllText(_reportedPath));
+                }
+
                 return local[componentName][objectName].ToObject<T>();
             }
         }
