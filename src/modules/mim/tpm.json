@@ -1,43 +1,43 @@
-{ 
-  "name": "TpmModel", 
+{
+  "name": "TpmModel",
   "type": "mimModel",
-  "contents": [ 
-    { 
-      "name": "Tpm", 
-      "type": "mimComponent", 
+  "contents": [
+    {
+      "name": "Tpm",
+      "type": "mimComponent",
       "contents": [
-        { 
-          "name": "tpmStatus", 
-          "type": "mimObject", 
+        {
+          "name": "tpmStatus",
+          "type": "mimObject",
           "desired": false,
           "schema": {
-             "type": "enum",
-             "valueSchema": "integer",
-             "enumValues": [
-               { 
-                 "name": "unknown",
-                 "enumValue": 0
-               },
-               {
-                 "name": "tpmDetected",
-                 "enumValue": 1
-               },
-               {
-                 "name": "tpmNotDetected",
-                 "enumValue": 2
-               }
-             ]
-           }
+            "type": "enum",
+            "valueSchema": "integer",
+            "enumValues": [
+              {
+                "name": "unknown",
+                "enumValue": 0
+              },
+              {
+                "name": "tpmDetected",
+                "enumValue": 1
+              },
+              {
+                "name": "tpmNotDetected",
+                "enumValue": 2
+              }
+            ]
+          }
         },
-        { 
-          "name": "tpmVersion", 
-          "type": "mimObject", 
+        {
+          "name": "tpmVersion",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
-        { 
-          "name": "tpmManufacturer", 
-          "type": "MimObject", 
+        {
+          "name": "tpmManufacturer",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         }

@@ -1,0 +1,16 @@
+{
+    "action": 0,                        // accept = 0, reject = 1, drop = 2
+    "ruleType": 0,                      // inbound = 0, outbound = 1, forward = 2
+    "protocol": 0,                      // all = 0, tcp = 1, udp = 2, icmp = 3
+    "source": {
+        "address": "<ip_address>",      // ex: 20.43.132.131/24
+        "port": 1234,                   // ex: 1234  
+        "interface": "<interface_name>" // ex: eth0
+    },
+    "destination": {
+        "address": "<ip_address>",  
+        "port": "<port_number>",    
+        "interface": "<interface_name>"     
+    },
+    "state": ["<state_name>"]           // ex: ESTABLISHED, RELATED, etc...
+}

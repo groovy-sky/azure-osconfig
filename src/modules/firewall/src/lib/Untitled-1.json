@@ -1,0 +1,12 @@
+{
+    "action": 1,
+    "target": 1,
+    "inbound": true,
+    "protocol": 3,
+    "source": "123.456.678.901",
+    "sourcePort": 80,
+    "destination": "987.654.321.678",
+    "destinationPort": 80,
+    "in": "eth0",
+    "out": "eth1"
+}

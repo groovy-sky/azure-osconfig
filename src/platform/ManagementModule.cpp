@@ -90,6 +90,7 @@ int ManagementModule::Load()
                 }
                 else if (0 != Info::Deserialize(document, m_info))
                 {
+                    OsConfigLogError(GetPlatformLog(), "Failed to deserialize info JSON for module '%s'", m_modulePath.c_str());
                     status = EINVAL;
                 }
             }
@@ -102,6 +103,7 @@ int ManagementModule::Load()
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "dlopen() failed for %s: %s", m_modulePath.c_str(), dlerror());
         status = EINVAL;
     }
 

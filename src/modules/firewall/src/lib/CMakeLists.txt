@@ -4,10 +4,12 @@
 project(firewalllib)
 
 add_library(firewalllib STATIC Firewall.cpp)
-set_property(TARGET firewalllib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 target_link_libraries(firewalllib PRIVATE logging commonutils)
+
 target_include_directories(firewalllib
     PUBLIC
         ${MODULES_INC_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_compile_options(firewalllib PUBLIC -fsigned-char)
+set_target_properties(firewalllib PROPERTIES POSITION_INDEPENDENT_CODE ON)

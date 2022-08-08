@@ -628,22 +628,22 @@ int MpiSession::Get(const char* componentName, const char* objectName, MPI_JSON_
 
     if (nullptr == componentName)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet invalid componentName: %s", componentName);
+        OsConfigLogError(GetPlatformLog(), "MpiGet invalid componentName: %s", componentName);
         status = EINVAL;
     }
     else if (nullptr == objectName)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet invalid objectName: %s", objectName);
+        OsConfigLogError(GetPlatformLog(), "MpiGet invalid objectName: %s", objectName);
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet invalid payload");
+        OsConfigLogError(GetPlatformLog(), "MpiGet invalid payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet invalid payloadSizeBytes");
+        OsConfigLogError(GetPlatformLog(), "MpiGet invalid payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -655,7 +655,7 @@ int MpiSession::Get(const char* componentName, const char* objectName, MPI_JSON_
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiSet componentName %s not found", componentName);
+            OsConfigLogError(GetPlatformLog(), "MpiGet componentName %s not found", componentName);
             status = EINVAL;
         }
     }
