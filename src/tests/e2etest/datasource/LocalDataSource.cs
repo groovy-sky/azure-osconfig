@@ -70,7 +70,7 @@ namespace E2eTesting
                 if ((DateTime.Now - start).TotalSeconds > maxWaitSeconds)
                 {
                     JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
-                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName].ToObject<T>(), desired[componentName].ToObject<T>());
+                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName], desired[componentName]);
                 }
 
                 return reported[componentName].ToObject<T>();
@@ -89,7 +89,7 @@ namespace E2eTesting
                 if ((DateTime.Now - start).TotalSeconds > maxWaitSeconds)
                 {
                     JObject desired = JObject.Parse(File.ReadAllText(_desiredPath));
-                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].ToObject<T>(), desired[componentName][objectName].ToObject<T>());
+                    Assert.Warn("[GetReported-LocalDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName], desired[componentName][objectName]);
                 }
 
                 return reported[componentName][objectName].ToObject<T>();
