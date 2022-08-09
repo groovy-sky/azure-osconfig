@@ -133,14 +133,14 @@ namespace E2eTesting
             return GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
         }
 
-        [Test]
-        [TestCase("echo 'hello world from local management'", 0, false, 0, "hello world from local management\n", CommandState.Succeeded, DataSourceType.Local)]
-        [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed, DataSourceType.IotHub)]
+        // [Test]
+        // [TestCase("echo 'hello world from local management'", 0, false, 0, "hello world from local management\n", CommandState.Succeeded, DataSourceType.Local)]
+        // [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded, DataSourceType.IotHub)]
+        // [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut, DataSourceType.IotHub)]
+        // [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded, DataSourceType.IotHub)]
+        // [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded, DataSourceType.IotHub)]
+        // [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded, DataSourceType.IotHub)]
+        // [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed, DataSourceType.IotHub)]
         public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state, DataSourceType dataSourceType)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
