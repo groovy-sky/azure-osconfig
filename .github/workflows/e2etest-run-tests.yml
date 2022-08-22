@@ -24,6 +24,11 @@ on:
         type: string
         default: ""
         required: false
+      delaySampling:
+        description: The number of seconds to delay the performance sampling
+        type: number
+        default: 10
+        required: false
       repeatForXHours:
         description: Repeat the test suite for X hours, every test run gets a new test-report
         type: number
@@ -110,6 +115,8 @@ jobs:
       - name: Start performance sampling
         if: inputs.cpuThreshold != ''
         run: |
+          echo -n Starting performance sampling in ${{ inputs.delaySampling }} seconds...
+          sleep ${{ inputs.delaySampling }} && echo done!
           # CPU
           pidstat -p `pidof osconfig` 1 > perf-cpu-osconfig.log &
           pidstat -p `pidof osconfig-platform` 1 > perf-cpu-osconfig-platform.log || true &
