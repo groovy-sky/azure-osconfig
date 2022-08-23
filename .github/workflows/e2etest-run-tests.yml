@@ -17,7 +17,7 @@ on:
       allowedMemoryDelta:
         description: The allowed memory delta expressed in %, workflow will fail if the the memory usage grows beyond this value
         type: number
-        default: 10
+        default: 25
         required: false
       cpuThreshold:
         description: The cpu threshold
@@ -106,7 +106,7 @@ jobs:
       - name: Capture memory metrics (Start)
         id: memory-start
         run: |
-          mem_start=`free | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          mem_start=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
           echo ::set-output name=mem_start::$mem_start
 
       - name: Configure and Start OSConfig
@@ -188,9 +188,9 @@ jobs:
 
       - name: Capture memory metrics (Stop)
         run: |
-          mem_stop=`free | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          mem_stop=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
           delta=$(bc -l <<< "mem_start=${{ steps.memory-start.outputs.mem_start }};mem_stop=$mem_stop;delta=mem_start/mem_stop;print delta;")
-          echo Memory Start: ${{ steps.memory-start.outputs.mem_start }}, Stop: $mem_stop, Delta: $delta
+          echo Memory Start: ${{ steps.memory-start.outputs.mem_start }} bytes, Stop: $mem_stop bytes, Delta: $delta
           
           # Check if the delta is greater than defined threshold
           result=`bc -l <<< "delta=$delta;high=1+(0.${{ inputs.allowedMemoryDelta }});low=1-(0.${{ inputs.allowedMemoryDelta }});if(high > delta && delta > low) print 0 else print 1;"`
