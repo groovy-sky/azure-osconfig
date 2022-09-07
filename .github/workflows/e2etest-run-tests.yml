@@ -90,7 +90,8 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: package.yml
-          branch: main
+          branch: ahbenmes/platform_reliability_e2e_fixes
+          # branch: main
           name: package
 
       - name: Install OSConfig (GitHub)
@@ -162,6 +163,12 @@ jobs:
             sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx" --logger "console;verbosity=detailed"
             checkResult $?
           fi
+      
+      - name: Capture final module twin state
+        if: failure()
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az iot hub module-twin show --device-id ${{ steps.get-test-data.outputs.device_id }} --module-id osconfig --login "${{ steps.hub-identity.outputs.iothubowner_connection_string }}"
 
       - name: Performance check (Stop)
         if: inputs.cpuThreshold != ''
@@ -204,14 +211,15 @@ jobs:
       - name: Stage logs
         if: always()
         run: |
-          sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
-          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+          sudo cp -f /var/log/osconfig* ${{ runner.temp }}
+          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*
 
       - name: Check logs
         if: success() || failure()
         uses: ./.github/actions/check-logs
         with:
           logs: |
+            # TODO: Make sure other logs are checked as well
             ${{ runner.temp }}/osconfig_pnp_agent.log
             ${{ runner.temp }}/osconfig_platform.log
 
@@ -220,7 +228,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-logs-${{ matrix.distroName }}
-          path: ${{ runner.temp }}/osconfig*.log
+          path: ${{ runner.temp }}/osconfig*
 
       - name: Upload Test Results
         if: always()

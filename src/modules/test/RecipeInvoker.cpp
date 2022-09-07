@@ -20,7 +20,7 @@ void RecipeInvoker::TestBody()
         if (0 == m_recipe.m_expectedResult)
         {
             JSON_Value *root_value = json_parse_string(payload);
-            ASSERT_NE(nullptr, root_value);
+            ASSERT_NE(nullptr, root_value) << "Failed to parse returned JSON payload";
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
             EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";

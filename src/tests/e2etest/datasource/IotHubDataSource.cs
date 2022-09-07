@@ -21,7 +21,7 @@ namespace E2eTesting
         private readonly string _moduleId = "osconfig";
         private readonly string _deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
 
-        private const int POLL_INTERVAL_MS = 1000;
+        private const int POLL_INTERVAL_MS = 100;
 
         protected const int ACK_SUCCESS = 200;
         protected const int ACK_ERROR = 400;
@@ -130,6 +130,9 @@ namespace E2eTesting
                 Assert.Warn("[SetDesired-IotHubDataSource] {0} not found in desired properties", componentName);
             }
 
+            updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+            reported = updatedTwin.Properties.Reported;
+
             while (!PropertyExists(reported, componentName) && !IsUpdated(reported, componentName, previousUpdate))
             {
                 if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
@@ -179,7 +182,8 @@ namespace E2eTesting
                 else
                 {
                     updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
-                    Assert.Warn("[SetDesired-IotHubDataSource] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5} | desired: {6}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
+                    reported = await LastReported();
+                    Assert.Warn("[SetDesired-IotHubDataSource] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5} | desired: {6}", componentName, objectName, start, DateTime.Now, reported.GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
                     break;
                 }
             }
@@ -214,7 +218,14 @@ namespace E2eTesting
                 else
                 {
                     var updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
-                    Assert.Warn("[GetReported-IotHubDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, JsonConvert.SerializeObject(reported),JsonConvert.SerializeObject(updatedTwin.Properties.Desired[componentName]));
+                    reported = await LastReported<T>(componentName, objectName);
+                    Assert.Warn("[GetReported-IotHubDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported (lastUpdated: {4}): {5}. desired (lastUpdated: {6}): {7}", componentName, objectName, start, DateTime.Now, updatedTwin.Properties.Reported.GetLastUpdated(), JsonConvert.SerializeObject(reported), updatedTwin.Properties.Desired.GetLastUpdated(), JsonConvert.SerializeObject(updatedTwin.Properties.Desired[componentName]));
+                    
+                    if (backupDataSource != null)
+                    {
+                        Assert.Warn("[GetReported-IotHubDataSource] Using backup datasource {0}", backupDataSource.GetType().Name);
+                        reported = backupDataSource.GetReported<T>(componentName, objectName, condition, maxWaitSeconds);
+                    }
                     break;
                 }
             }

@@ -7,6 +7,7 @@ namespace E2eTesting
 {
     public abstract class AbstractDataSource
     {
+        public static AbstractDataSource backupDataSource = null;
         protected const int DEFAULT_MAX_WAIT_SECONDS = 90;
         protected int _maxWaitTimeSeconds = DEFAULT_MAX_WAIT_SECONDS;
         abstract public void Initialize();

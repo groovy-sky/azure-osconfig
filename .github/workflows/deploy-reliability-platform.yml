@@ -1,7 +1,8 @@
 name: Platform Reliability Tests
-on:
-  schedule:
-    - cron: '0 10 * * *' #10am UTC / 6pm PST
+on: [push]
+  # TODO: Uncomment this when ready to run reliability tests on a schedule
+  # schedule:
+  #   - cron: '0 10 * * *' #10am UTC / 6pm PST
 
 jobs:
   fetch-targets:
@@ -57,7 +58,7 @@ jobs:
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
-      repeatForXHours: 1
+      repeatForXHours: 2
       allowedMemoryDelta: 0
       testNameSuffix: (reliability-platform)
     secrets: inherit

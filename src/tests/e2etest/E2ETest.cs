@@ -39,6 +39,9 @@ namespace E2eTesting
             _iotHubDataSource.Initialize();
             _localDataSource = new LocalDataSource();
             _localDataSource.Initialize();
+            
+            // Uncomment to use the local data source on the occasion of hub failure/timeouts
+            // IotHubDataSource.backupDataSource = _localDataSource;
         }
 
         public AbstractDataSource GetDataSource(DataSourceType dataSourceType)
