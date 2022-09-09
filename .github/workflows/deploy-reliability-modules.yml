@@ -1,7 +1,7 @@
 name: Modules Reliability Tests
-on:
-  schedule:
-  - cron: '0 10 * * *' #10am UTC / 6pm PST
+on: [push]
+  # schedule:
+  # - cron: '0 10 * * *' #10am UTC / 6pm PST
 
 jobs:
   fetch-targets:
@@ -32,7 +32,7 @@ jobs:
       environment: modulestest
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
-      repeatForXHours: 4
+      repeatForXHours: 1
       testNameSuffix: (reliability-modules)
     secrets: inherit
 
