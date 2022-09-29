@@ -1,11 +1,5 @@
 name: E2E (GitHub-main)
 on:
-  workflow_run:
-    workflows: ["Package"]
-    types:
-      - completed
-    conclusions:
-      - success
   push:
     branches:
       - main
@@ -13,9 +7,14 @@ on:
       - devops/e2e/**
 
 jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    secrets: inherit
+
   fetch-targets:
     name: Fetch Test Targets
     uses: ./.github/workflows/e2etest-fetch-targets.yml
+    needs: [package]
     with:
       environment: e2e-github-main
     secrets: inherit
