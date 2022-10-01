@@ -33,7 +33,7 @@ runs:
   using: composite
   steps:
     - name: Setup jo
-      run: apt-get install jo -y
+      run: sudo apt-get install jo -y
       shell: bash
 
     - name: Publish report summary
