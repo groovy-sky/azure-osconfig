@@ -1,0 +1,87 @@
+name: Build Package
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        description: The artifact to create containing the packages.
+        type: string
+        required: false
+        default: "package"
+      build-type:
+        description: The type of build to perform (Debug | Release).
+        type: string
+        required: false
+        default: "Release"
+      os:
+        description: The operating system to build for.
+        type: string
+        required: true
+      arch:
+        description: The architecture to build for.
+        type: string
+        required: true
+      platform:
+        description: The platform to build for.
+        type: string
+        required: true
+
+env:
+  BUILD_TYPE: Release
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          platform: ${{ inputs.platform }}
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            # TODO: figure out a better solution for the "tweak" version
+            mkdir build && cd build
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
+
+      - name: Run cpack
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cpack -G DEB
+
+      - name: Binary footprint delta validation
+        uses: ./.github/actions/footprint-check
+        with:
+          allowedDelta: 10
+          distroName: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}
+          path: ./build/osconfig_*

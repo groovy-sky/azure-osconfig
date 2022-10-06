@@ -6,8 +6,8 @@ on:
       - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     paths:
       - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
@@ -49,7 +49,8 @@ jobs:
   docker-build:
     name: Docker build & push
     needs: list-containers
-    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
+    runs-on: ubuntu-latest
+    # runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
     permissions:
       contents: read
       packages: write
@@ -69,15 +70,14 @@ jobs:
           image=${dockerfile#devops/docker/}
           image=${image%/*}
           distro=${image%-*}
-          arch=${image#*-}
+          platform=${image#*-}
 
           repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
 
-          echo ::set-output name=name::$(echo -n ghcr.io/$repo/$image)
+          echo ::set-output name=name::$(echo -n $repo/$image)
           echo ::set-output name=path::$(dirname ${dockerfile})
           echo ::set-output name=distro::$(echo -n $distro)
-          echo ::set-output name=arch::$(echo -n $arch)
-          echo ::set-output name=tar::$(echo /tmp/${{ steps.image.outputs.name }}.tar)
+          echo ::set-output name=platform::$(echo -n $platform)
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -101,23 +101,23 @@ jobs:
             ${{ steps.image.outputs.name }}:latest
             ${{ steps.image.outputs.name }}:${{ github.run_number }}
             ${{ steps.image.outputs.name }}:${{ github.sha }}
-          outputs: type=docker,dest=${{ steps.image.outputs.tar }}
 
       # Test the container image on 'pull_request' events
 
-      - name: Run container (test)
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Run container
+        # TODO:
+        # if: ${{ github.event_name == 'pull_request' }}
         id: container
         uses: ./.github/actions/container-run
         with:
-          image: ${{ steps.image.outputs.name }}
-          local: ${{ steps.image.outputs.tar }}
-          arch: ${{ steps.image.outputs.arch }}
+          container: ${{ steps.image.outputs.name }}
+          platform: ${{ steps.image.outputs.platform }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ github.sha }}
 
-      - name: Build azure-osconfig (test)
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Build azure-osconfig
+        # TODO:
+        # if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
@@ -131,7 +131,6 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
-          context: ${{ steps.image.outputs.path }}
           push: true
           tags: |
             ${{ steps.image.outputs.name }}:latest

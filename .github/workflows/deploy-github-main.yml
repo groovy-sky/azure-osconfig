@@ -1,20 +1,46 @@
 name: E2E (GitHub-main)
+
 on:
-  workflow_run:
-    workflows: ["Package"]
-    types:
-      - completed
-    conclusions:
-      - success
   push:
     branches:
       - main
     paths:
+      - src/**
       - devops/e2e/**
 
 jobs:
+  version:
+    name: Set version
+    runs-on: ubuntu-latest
+    outputs:
+      tweak: ${{ steps.version.outputs.tweak }}
+    steps:
+      - name: Set version
+        id: version
+        run: echo "::set-output name=tweak::$(echo $(date +'%Y%m%d%H%M'))"
+
+  package:
+    uses: ./.github/workflows/package-build.yml
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu18.04, ubuntu20.04, debian9]
+        variant:
+          [
+            { arch: arm, platform: linux/arm/v7 },
+            { arch: arm64, platform: linux/arm64/v8 },
+            { arch: amd64, platform: linux/amd64 },
+          ]
+    with:
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.variant.arch }}
+      platform: ${{ matrix.variant.platform }}
+      tweak: ${{ needs.version.outputs.tweak }}
+
   fetch-targets:
     name: Fetch Test Targets
+    needs: package
     uses: ./.github/workflows/e2etest-fetch-targets.yml
     with:
       environment: e2e-github-main
