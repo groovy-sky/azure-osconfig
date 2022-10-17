@@ -1,7 +1,7 @@
 name: CI
 
-on:
-  push:
+# on:
+#   push:
 
 env:
   BUILD_TYPE: Release
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
+        os: [ubuntu-18.04, ubuntu-20.04, debian-9]
         variant:
           [
             { arch: arm, platform: linux/arm/v7 },
@@ -22,7 +22,7 @@ jobs:
             { arch: amd64, platform: linux/amd64 },
           ]
         exclude:
-          - os: ubuntu20.04
+          - os: ubuntu-20.04
             variant: { arch: arm, platform: linux/arm/v7 }
 
     steps:
@@ -104,15 +104,12 @@ jobs:
 
   func-test:
     name: Functional test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: build
     strategy:
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
+        os: [ubuntu-18.04, ubuntu-20.04, debian-9]
         arch: [amd64]
-    container:
-      image: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.arch }}
-      options: --privileged --init
 
     steps:
       - name: Restore build
@@ -156,49 +153,48 @@ jobs:
             ${{ steps.test.outputs.log }}
             ${{ steps.test.outputs.xml }}
 
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/azure/azure-osconfig/ubuntu-20.04-amd64:latest
+    steps:
+      - uses: actions/checkout@v3
 
-  # coverage:
-  #   name: Code coverage
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: ghcr.io/azure/azure-osconfig/ubuntu20.04-amd64:latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+      - name: Build azure-osconfig
+        run: |
+          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
+          cmake --build ./build --config Debug
+      - name: Run ctest
+        working-directory: ./build
+        run: ctest
 
-  #     - name: Build azure-osconfig
-  #       run: |
-  #         cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
-  #         cmake --build ./build --config Debug
-  #     - name: Run ctest
-  #       working-directory: ./build
-  #       run: ctest
+      - name: Run gcovr
+        working-directory: ./build
+        run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
 
-  #     - name: Run gcovr
-  #       working-directory: ./build
-  #       run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
+      - name: Generate markdown report
+        uses: irongut/CodeCoverageSummary@v1.2.0
+        with:
+          filename: ./build/coverage.xml
+          fail_below_min: true
+          format: markdown
+          hide_complexity: true
+          output: both
+          badge: true
+          thresholds: "60 80"
 
-  #     - name: Generate markdown report
-  #       uses: irongut/CodeCoverageSummary@v1.2.0
-  #       with:
-  #         filename: ./build/coverage.xml
-  #         fail_below_min: true
-  #         format: markdown
-  #         hide_complexity: true
-  #         output: both
-  #         badge: true
-  #         thresholds: "60 80"
+      - name: Create coverage report
+        uses: ./.github/actions/check-run
+        with:
+          name: Coverage report
+          title: Code coverage
+          markdown: ./code-coverage-results.md
 
-  #     - name: Create coverage report
-  #       uses: ./.github/actions/check-run
-  #       with:
-  #         name: Coverage report
-  #         title: Code coverage
-  #         markdown: ./code-coverage-results.md
-
-  #     - uses: actions/upload-artifact@v2
-  #       if: always()
-  #       with:
-  #         name: code-coverage
-  #         path: |
-  #           ./build/coverage.xml
-  #           ./code-coverage-results.md
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: code-coverage
+          path: |
+            ./build/coverage.xml
+            ./code-coverage-results.md
