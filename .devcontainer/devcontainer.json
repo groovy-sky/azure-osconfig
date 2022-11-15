@@ -14,13 +14,17 @@
 		"GitHub.copilot",
 		"GitHub.vscode-pull-request-github",
 		"hashicorp.terraform",
+		"me-dutour-mathieu.vscode-github-actions",
+		"mhutchie.git-graph",
 		"ms-azure-devops.azure-pipelines",
 		"ms-azuretools.vscode-azureterraform",
 		"ms-dotnettools.csharp",
-		"twxs.cmake",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
-		"mhutchie.git-graph",
-		"me-dutour-mathieu.vscode-github-actions"
+		"rust-lang.rust-analyzer",
+		"serayuzgur.crates",
+		"tamasfe.even-better-toml",
+		"twxs.cmake",
+		"vadimcn.vscode-lldb"
     ]
 }
