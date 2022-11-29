@@ -1,16 +1,16 @@
 name: Build Containers
 
 on:
-  pull_request:
-    paths:
-      - .github/workflows/build-containers.yml
-      - devops/docker/**/Dockerfile
+  # pull_request:
+  #   paths:
+  #     - .github/workflows/build-containers.yml
+  #     - devops/docker/**/Dockerfile
   push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/build-containers.yml
-      - devops/docker/**/Dockerfile
+    # branches:
+    #   - main
+    # paths:
+    #   - .github/workflows/build-containers.yml
+    #   - devops/docker/**/Dockerfile
 
 env:
   BUILD_TYPE: Release
@@ -48,7 +48,8 @@ jobs:
   docker-build:
     name: Docker
     needs: modified-containers
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
     permissions:
       contents: read
       packages: write
@@ -129,24 +130,24 @@ jobs:
             cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
             cmake --build . --config ${{ env.BUILD_TYPE }}
 
-      - name: Docker push (ghcr.io)
-        # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          registry: ghcr.io
-          tags: |
-            ${{ steps.image.outputs.name }}:latest
-            ${{ steps.image.outputs.name }}:${{ github.run_number }}
-            ${{ steps.image.outputs.name }}:${{ github.sha }}
+      # - name: Docker push (ghcr.io)
+      #   # Only push the image when a pull request is merged to main
+      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     push: true
+      #     registry: ghcr.io
+      #     tags: |
+      #       ${{ steps.image.outputs.name }}:latest
+      #       ${{ steps.image.outputs.name }}:${{ github.run_number }}
+      #       ${{ steps.image.outputs.name }}:${{ github.sha }}
 
-      - name: Docker push (azurecr.io)
-        # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          docker buildx imagetools create \
-            --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:latest \
-            --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:${{ github.run_number }} \
-            --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:${{ github.sha }} \
-            ghcr.io/${{ steps.image.outputs.name }}:latest
+      # - name: Docker push (azurecr.io)
+      #   # Only push the image when a pull request is merged to main
+      #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      #   run: |
+      #     docker buildx imagetools create \
+      #       --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:latest \
+      #       --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:${{ github.run_number }} \
+      #       --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:${{ github.sha }} \
+      #       ghcr.io/${{ steps.image.outputs.name }}:latest
