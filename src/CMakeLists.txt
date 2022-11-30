@@ -93,6 +93,12 @@ endif()
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Rust
+enable_language(Rust)
+include(Cargo)
+
 if (BUILD_TESTS)
     enable_testing()
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
@@ -109,7 +115,6 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CPACK_GENERATOR "DEB")
 
 set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
