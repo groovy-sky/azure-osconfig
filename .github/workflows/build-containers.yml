@@ -6,8 +6,8 @@ on:
       - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     paths:
       - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
@@ -53,13 +53,15 @@ jobs:
       contents: read
       packages: write
     strategy:
+      fail-fast: false
       matrix:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v2
         with:
           # Only checkout submodules recursively if this is a pull request
-          submodules: ${{ github.event_name == 'pull_request' && 'recursive' || 'false' }}
+          # submodules: ${{ github.event_name == 'pull_request' && 'recursive' || 'false' }}
+          submodules: recursive
 
       - name: Setup image
         id: image
@@ -132,15 +134,15 @@ jobs:
 
       - name: Docker push (ghcr.io)
         # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
           push: true
-          registry: ghcr.io
+          context: ${{ steps.image.outputs.path }}
           tags: |
-            ${{ steps.image.outputs.name }}:latest
-            ${{ steps.image.outputs.name }}:${{ github.run_number }}
-            ${{ steps.image.outputs.name }}:${{ github.sha }}
+            ghcr.io/${{ steps.image.outputs.name }}:latest
+            ghcr.io/${{ steps.image.outputs.name }}:${{ github.run_number }}
+            ghcr.io/${{ steps.image.outputs.name }}:${{ github.sha }}
 
       - name: Docker push (azurecr.io)
         # Only push the image when a pull request is merged to main
