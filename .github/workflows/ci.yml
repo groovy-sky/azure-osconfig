@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
+        os: [ubuntu18.04, ubuntu20.04, debian10, debian11]
         variant:
           [
             { arch: arm, platform: linux/arm/v7 },
@@ -26,6 +26,10 @@ jobs:
           ]
         exclude:
           - os: ubuntu20.04
+            variant: { arch: arm, platform: linux/arm/v7 }
+          - os: debian10
+            variant: { arch: arm, platform: linux/arm/v7 }
+          - os: debian11
             variant: { arch: arm, platform: linux/arm/v7 }
 
     steps:
