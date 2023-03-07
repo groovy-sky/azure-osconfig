@@ -66,6 +66,7 @@ jobs:
           cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
 
       - name: Set test output
+        if: always()
         id: test
         run: |
           echo "log=${{ matrix.os }}-${{ matrix.variant.arch }}.log" >> $GITHUB_OUTPUT
