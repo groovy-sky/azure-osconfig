@@ -15,5 +15,4 @@ jobs:
 
       - name: Run test
         run: |
-          echo "Hello, world!"
-          echo "I'm running on a ${{ matrix.type }} agent"
+          echo "I'm running on a ${{ runner.os }} runner in a ${{ matrix.type }} pool"
